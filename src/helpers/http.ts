@@ -20,8 +20,9 @@ export function handleRouteError(error: unknown) {
   }
 
   if (error instanceof Error) {
+    // Não expõe mensagens internas de erro de infra/banco ao cliente
     log('error', 'Erro na rota', { message: error.message })
-    return fail(error.message, 400)
+    return fail('Erro ao processar a requisição. Tente novamente.', 500)
   }
 
   log('error', 'Erro inesperado na rota')

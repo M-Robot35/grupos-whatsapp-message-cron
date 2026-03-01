@@ -33,32 +33,83 @@ enum ScheduleStatus {
 
 enum DeliveryStatus {
   PENDING
+  SENDING
   SENT
   FAILED
 }
 
+enum StorageProviderEnum {
+  LOCAL
+  S3
+}
+
 model User {
-  id          String            @id @default(cuid())
-  name        String
-  email       String            @unique
-  status      UserStatus        @default(ACTIVE)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  memberships WorkspaceMember[]
-  limits      UserLimit[]
+  id            String            @id @default(cuid())
+  name          String
+  email         String            @unique
+  emailVerified Boolean           @default(false)
+  image         String?
+  role          String            @default("user")
+  status        UserStatus        @default(ACTIVE)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  memberships   WorkspaceMember[]
+  limits        UserLimit[]
+  sessions      Session[]
+  accounts      Account[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id           String    @id @default(cuid())
+  userId       String
+  accountId    String
+  providerId   String
+  accessToken  String?
+  refreshToken String?
+  idToken      String?
+  expiresAt    DateTime?
+  password     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
 }
 
 model Workspace {
-  id          String            @id @default(cuid())
-  name        String
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  members     WorkspaceMember[]
-  instances   WaInstance[]
-  groups      WaGroup[]
-  ads         Ad[]
-  schedules   Schedule[]
-  deliveries  Delivery[]
+  id         String            @id @default(cuid())
+  name       String
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  members    WorkspaceMember[]
+  instances  WaInstance[]
+  groups     WaGroup[]
+  ads        Ad[]
+  schedules  Schedule[]
+  deliveries Delivery[]
 }
 
 model WorkspaceMember {
@@ -75,26 +126,26 @@ model WorkspaceMember {
 }
 
 model SystemSetting {
-  id                           String   @id @default(cuid())
-  defaultMaxInstancesPerUser   Int      @default(1)
-  defaultMaxAdsPerUser         Int      @default(10)
-  defaultMaxSchedulesPerUser   Int      @default(10)
-  defaultMaxGroupsPerSchedule  Int      @default(50)
-  createdAt                    DateTime @default(now())
-  updatedAt                    DateTime @updatedAt
+  id                          String   @id @default(cuid())
+  defaultMaxInstancesPerUser  Int      @default(1)
+  defaultMaxAdsPerUser        Int      @default(10)
+  defaultMaxSchedulesPerUser  Int      @default(10)
+  defaultMaxGroupsPerSchedule Int      @default(50)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
 }
 
 model UserLimit {
-  id                    String   @id @default(cuid())
-  userId                String
-  workspaceId           String
-  maxInstances          Int?
-  maxAds                Int?
-  maxSchedules          Int?
-  maxGroupsPerSchedule  Int?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String   @id @default(cuid())
+  userId               String
+  workspaceId          String
+  maxInstances         Int?
+  maxAds               Int?
+  maxSchedules         Int?
+  maxGroupsPerSchedule Int?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, workspaceId])
 }
@@ -129,40 +180,45 @@ model WaGroup {
 }
 
 model Ad {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   workspaceId String
   title       String
   text        String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  active      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   items       AdItem[]
+  schedules   Schedule[]
 
   @@index([workspaceId])
 }
 
 model AdItem {
-  id        String   @id @default(cuid())
+  id        String              @id @default(cuid())
   adId      String
   imageUrl  String?
   text      String?
-  position  Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  position  Int                 @default(0)
+  provider  StorageProviderEnum @default(LOCAL)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  ad        Ad                  @relation(fields: [adId], references: [id], onDelete: Cascade)
 }
 
 model Schedule {
-  id          String         @id @default(cuid())
+  id          String          @id @default(cuid())
   workspaceId String
   adId        String
-  status      ScheduleStatus @default(ACTIVE)
-  timezone    String         @default("America/Sao_Paulo")
+  status      ScheduleStatus  @default(ACTIVE)
+  timezone    String          @default("America/Sao_Paulo")
   rrule       String
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  ad          Ad             @relation(fields: [adId], references: [id], onDelete: Cascade)
+  delayMin    Int             @default(1)
+  delayMax    Int             @default(4)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  ad          Ad              @relation(fields: [adId], references: [id], onDelete: Cascade)
   groups      ScheduleGroup[]
   deliveries  Delivery[]
 
@@ -180,19 +236,20 @@ model ScheduleGroup {
 }
 
 model Delivery {
-  id            String         @id @default(cuid())
-  workspaceId   String
-  scheduleId    String
-  groupId       String
-  status        DeliveryStatus @default(PENDING)
-  idempotencyKey String        @unique
-  lastError     String?
-  retryCount    Int            @default(0)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  schedule      Schedule       @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  attempts      DeliveryAttempt[]
+  id             String            @id @default(cuid())
+  workspaceId    String
+  scheduleId     String
+  groupId        String
+  status         DeliveryStatus    @default(PENDING)
+  scheduledAt    DateTime          @default(now())
+  idempotencyKey String            @unique
+  lastError      String?
+  retryCount     Int               @default(0)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  workspace      Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  schedule       Schedule          @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  attempts       DeliveryAttempt[]
 
   @@index([workspaceId])
 }

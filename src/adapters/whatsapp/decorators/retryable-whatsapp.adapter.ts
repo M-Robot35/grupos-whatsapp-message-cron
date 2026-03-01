@@ -6,7 +6,7 @@ import { WhatsAppProvider } from '../types'
  * Permite "encaixar" rapidamente em novos adapters sem duplicar lógica.
  */
 export class RetryableWhatsAppAdapter implements WhatsAppProvider {
-  constructor(private readonly provider: WhatsAppProvider) {}
+  constructor(private readonly provider: WhatsAppProvider) { }
 
   async connect(instanceId: string): Promise<void> {
     return withRetry(() => this.provider.connect(instanceId), {

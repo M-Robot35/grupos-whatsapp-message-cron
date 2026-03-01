@@ -12,15 +12,22 @@ export function log(level: LogLevel, message: string, context?: Record<string, u
     ...context
   }
 
+  const logString = JSON.stringify(payload)
+
   if (level === 'error') {
-    console.error(JSON.stringify(payload))
+    console.error(`\x1b[31m${logString}\x1b[0m`) // Red
     return
   }
 
   if (level === 'warn') {
-    console.warn(JSON.stringify(payload))
+    console.warn(`\x1b[33m${logString}\x1b[0m`) // Yellow
     return
   }
 
-  console.log(JSON.stringify(payload))
+  if (level === 'info') {
+    console.log(`\x1b[32m${logString}\x1b[0m`) // Green
+    return
+  }
+
+  console.log(logString)
 }

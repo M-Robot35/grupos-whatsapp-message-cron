@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+  /* ── Default: DARK to match the landing page ── */
+  :root {
+    /* Shadcn tokens — tuned to the ZapCron dark blue/purple palette */
+    --background: 222 47% 4%;
+    /* #020617 */
+    --foreground: 213 31% 91%;
+    /* #e2e8f0 */
+
+    --card: 222 47% 6%;
+    /* #0f172a */
+    --card-foreground: 213 31% 91%;
+
+    --popover: 222 47% 6%;
+    --popover-foreground: 213 31% 91%;
+
+    --primary: 221 83% 53%;
+    /* #2563eb */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 262 83% 58%;
+    /* #7c3aed */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 222 30% 13%;
+    /* #1e293b */
+    --muted-foreground: 215 20% 65%;
+    /* #94a3b8 */
+
+    --accent: 199 89% 58%;
+    /* #38bdf8 */
+    --accent-foreground: 222 47% 4%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 222 25% 16%;
+    /* #1e293b */
+    --input: 222 25% 16%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.625rem;
+
+    /* Chart tokens */
+    --chart-1: 221 83% 53%;
+    --chart-2: 262 83% 58%;
+    --chart-3: 199 89% 58%;
+    --chart-4: 160 84% 39%;
+    --chart-5: 43 96% 56%;
+
+    /* Legacy CSS variables used by landing page — preserved so it doesn't break */
+    --bg-body: #020617;
+    --bg-header: rgba(2, 6, 23, 0.88);
+    --bg-card: rgba(15, 23, 42, 0.65);
+    --bg-footer: #020617;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-card-p: #cbd5e1;
+    --border-color: rgba(30, 41, 59, 0.9);
+    --card-border: rgba(51, 65, 85, 0.55);
+    --btn-ghost-color: #cbd5e1;
+    --btn-ghost-hover: #ffffff;
+    --shadow-card: 0 25px 50px -15px rgba(0, 0, 0, 0.55);
+  }
+
+  /* Light mode overrides */
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 4%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 262 83% 58%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 222 47% 4%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+
+    --bg-body: #f8fafc;
+    --bg-header: rgba(255, 255, 255, 0.88);
+    --bg-card: rgba(255, 255, 255, 0.92);
+    --bg-footer: #f1f5f9;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --text-card-p: #64748b;
+    --border-color: rgba(226, 232, 240, 0.9);
+    --card-border: rgba(203, 213, 225, 0.6);
+    --btn-ghost-color: #475569;
+    --btn-ghost-hover: #0f172a;
+    --shadow-card: 0 20px 50px -15px rgba(15, 23, 42, 0.08);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    /* Force dark theme to match landing page default */
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+}
+
+/* ── Gradient text utility ──────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glow card effect ───────────────────────────────────────────────────────── */
+.glow-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
